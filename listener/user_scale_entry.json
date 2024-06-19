@@ -1,0 +1,16 @@
+{
+    "data": [
+        {
+            "header": "User",
+            "created_on": "2024-04-10T14:55:32.624780Z",
+            "gross": "-13830",
+            "tare": "-13830",
+            "net": "0",
+            "user_id": "1",
+            "field00": "100",
+            "field01": "Yellow corn",
+            "field02": "First 600",
+            "field04": "First Shift"
+        }
+    ]
+}

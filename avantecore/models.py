@@ -146,7 +146,7 @@ class LogisticsState(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     closed_on = models.DateTimeField(blank=True, null=True)
     # this field should be computed but will remain editable for manual reconcilliation, if necessary
-    staged_totes = models.SmallIntegerField(blank=False, null=False)
+    staged_totes_manual = models.SmallIntegerField(blank=False, null=False)
     staged_totes_calculated = models.SmallIntegerField(blank=False, null=False, default=0)
 
     # we need a scheduled task to update the most recent logistics state periodically so we don't have to rely on the
@@ -157,8 +157,7 @@ class LogisticsState(models.Model):
 
     @property
     def staged_totes_computed(self):
-        totes = self.staged_queue.count()
-        return totes
+        return self.staged_queue.count()
 
     def __str__(self):
         return 'LSTATE: {} - {}Z Computed staged totes: {}'.format(self.id, self.created_on.strftime("%m-%d-%Y %H:%M"), self.staged_totes_computed)
@@ -186,11 +185,24 @@ class LedgerEntry(models.Model):
 
 class Tote(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
+    # A tote weight will be the aggregation of ScaleEntry's (tips) into the Tote
+    # this should be updated based on each tip into the tote.
     tote_weight = models.DecimalField(decimal_places=2, max_digits=10, default=0.00)
+    tips_manual = models.SmallIntegerField(blank=True, null=True)
+    tips_calculated = models.SmallIntegerField(blank=False, null=False, default=0)
     staged = models.ForeignKey(LogisticsState, on_delete=models.DO_NOTHING, blank=True, null=True, related_name='staged_queue')
 
     def __str__(self):
         return 'Tote: {} {}Z {} lbs.'.format(self.id, self.created_on.strftime("%m-%d-%Y %H:%M"), self.tote_weight)
+    @property
+    def scale_tips_computed(self):
+        return self.tips.count()
+
+    # we need a scheduled task to update the most recent logistics state periodically so we don't have to rely on the
+    # ojbect to be updated on save.
+    def save(self, *args, **kwargs):
+        self.tips_calculated = self.scale_tips_computed
+        super(Tote, self).save(*args, **kwargs)
 
 # A ToteMove record should be created every time the tote is moved for whatever reason to track chain of custody
 # as best as possible.
@@ -238,7 +250,7 @@ class ScaleEntry(models.Model):
     field01 = models.CharField(max_length=150)
     field02 = models.CharField(max_length=150)
     field04 = models.CharField(max_length=150)
-    tote = models.ForeignKey(Tote, on_delete=models.DO_NOTHING)
+    tote = models.ForeignKey(Tote, on_delete=models.DO_NOTHING, related_name='tip')
     ledger_entry = models.ForeignKey(LedgerEntry, on_delete=models.DO_NOTHING, blank=True, null=True)
 
     def save(self, *args, **kwargs):
