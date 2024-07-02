@@ -2047,7 +2047,8 @@ p.text-muted {
 }
 
 .navbar-brand {
-  background: #3f4d67;
+  /*background: #3f4d67;*/
+  background: #FFFFFF;
 }
 
 .pcoded-header:before,
@@ -2068,7 +2069,8 @@ p.text-muted {
   width: 264px;
   height: 100vh;
   top: 0;
-  background: #3f4d67;
+  /*background: #3f4d67;*/
+  background: #FFFFFF;
   color: #a9b7d0;
 }
 .pcoded-navbar ul {
@@ -2110,6 +2112,19 @@ p.text-muted {
 .pcoded-navbar .header-logo + .scroll-div {
   float: left;
   display: inline-block;
+}
+
+.intero-logo {
+    background-image: url(../images/logo/interologo_tag_FNL.png) !important;
+    background-repeat: no-repeat;
+    width: 105px;
+    height: 45px;
+    display: inline-block;
+    background-size: contain;
+}
+
+.mb-4 .intero-logo{
+    margin-bottom: 10px;
 }
 .pcoded-navbar .mobile-menu {
   display: -webkit-box;
@@ -2473,7 +2488,7 @@ p.text-muted {
   opacity: 1;
 }
 .pcoded-navbar .pcoded-menu-caption {
-  color: #e8edf7;
+  color: darkred;
 }
 .pcoded-navbar .pcoded-inner-navbar li.active > a, .pcoded-navbar .pcoded-inner-navbar li:focus > a, .pcoded-navbar .pcoded-inner-navbar li:hover > a {
   color: #1dc4e9;
