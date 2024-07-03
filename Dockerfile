@@ -5,6 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PIP_DISABLE_PIP_VERSION_CHECK 1
 
+WORKDIR /avante_r2
+
 COPY requirements.txt .
 
 # install python dependencies

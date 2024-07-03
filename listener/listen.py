@@ -1,21 +1,3 @@
-# client example
-
-import socket, time
-#client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-#client_socket.connect(('localhost', 5000))
-#while True:
- #   time.sleep(5)
- #   data = client_socket.recv(512)
- #   if data.lower() == 'q':
- #       client_socket.close()
- #       break
-
- #   print("RECEIVED: %s" % data)
- #   data = input("SEND( TYPE q or Q to Quit):")
- #   client_socket.send(data)
- #   if data.lower() == 'q':
- #       client_socket.close()
- #       break
 import socket
 import csv
 from datetime import datetime, timezone
@@ -30,6 +12,15 @@ def beaconToCSV(filename):
     for line in data:
         print(line)
         list = line.split(',')
+
+        match list[0]:
+            case 'User':
+                print('This is a User scale entry (tip).')
+            case 'Hauler':
+                print('This is a Hauler scale entry.')
+            case 'SubjectMove':
+                print('This is movement detected by the Intero sensor.')
+
         print(list)
         csvWriter.writerow(list)
     outputFile.close()
@@ -45,8 +36,8 @@ while True:
     c, addr = s.accept()
     msg1 = "Connection accepted from "
     print(msg1.encode() + repr(addr[1]).encode())
-    utcnow = datetime.now(tz=timezone.utc).timestamp()
-    beaconFileName = str(utcnow) + '.beacon'
+    utcnow = datetime.now(tz=timezone.utc)
+    beaconFileName = str(utcnow.strftime("%Y%m%d_%H%M%SZ")) + '.beacon'
     beaconFile = open(beaconFileName, 'w')
     beaconFile.write(str(addr[0]) + ',' + str(addr[1]) + '\n')
     msg2 = "Server approved connection"
