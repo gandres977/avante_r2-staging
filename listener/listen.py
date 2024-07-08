@@ -27,7 +27,6 @@ def beaconToCSV(filename):
 
 
 s = socket.socket()
-#host = socket.gethostname()
 host = '192.168.10.249'
 port = 5001
 s.bind((host,port))
