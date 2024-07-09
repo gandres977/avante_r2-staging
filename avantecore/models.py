@@ -144,15 +144,20 @@ class SmartEdgeSensor(models.Model):
 
 class LogisticsState(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
+    # quick name that may be left blank but can be used to make reconcilation of entries easier.
+    logistics_name = models.CharField(max_length=50, blank=True, null=True)
     closed_on = models.DateTimeField(blank=True, null=True)
     # this field should be computed but will remain editable for manual reconcilliation, if necessary
-    staged_totes_manual = models.SmallIntegerField(blank=False, null=False)
+    staged_totes_manual = models.SmallIntegerField(blank=False, null=False, default=-1)
     staged_totes_calculated = models.SmallIntegerField(blank=False, null=False, default=0)
 
     # we need a scheduled task to update the most recent logistics state periodically so we don't have to rely on the
     # ojbect to be updated on save.
     def save(self, *args, **kwargs):
-        self.staged_totes_calculated = self.staged_totes_computed
+        if self.id is None:
+            self.staged_totes_calculated = 0
+        else:
+            self.staged_totes_calculated = self.staged_totes_computed
         super(LogisticsState, self).save(*args, **kwargs)
 
     @property
@@ -160,7 +165,7 @@ class LogisticsState(models.Model):
         return self.staged_queue.count()
 
     def __str__(self):
-        return 'LSTATE: {} - {}Z Computed staged totes: {}'.format(self.id, self.created_on.strftime("%m-%d-%Y %H:%M"), self.staged_totes_computed)
+        return 'LSTATE: {}/{} - {}Z Computed staged totes: {}'.format(self.id, self.logistics_name, self.created_on.strftime("%m-%d-%Y %H:%M"), self.staged_totes_computed)
 
 # A LedgerEntry will be added anytime a sensor, scale or haul event is triggered and posts poll data
 # For the time being, just log the event reference as a string. We will want to evolve this once
@@ -185,6 +190,9 @@ class LedgerEntry(models.Model):
 
 class Tote(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
+    # This is just a quick name that may be left blank but can be used to make reconcilation of entries easier.
+    tote_name = models.CharField(max_length=50, blank=True, null=True)
+    active_tote = models.BooleanField(default=False)
     # A tote weight will be the aggregation of ScaleEntry's (tips) into the Tote
     # this should be updated based on each tip into the tote.
     tote_weight = models.DecimalField(decimal_places=2, max_digits=10, default=0.00)
@@ -193,10 +201,10 @@ class Tote(models.Model):
     staged = models.ForeignKey(LogisticsState, on_delete=models.DO_NOTHING, blank=True, null=True, related_name='staged_queue')
 
     def __str__(self):
-        return 'Tote: {} {}Z {} lbs.'.format(self.id, self.created_on.strftime("%m-%d-%Y %H:%M"), self.tote_weight)
+        return 'Tote: {} {} {}Z {} lbs.'.format(self.id, self.tote_name, self.created_on.strftime("%m-%d-%Y %H:%M"), self.tote_weight)
     @property
     def scale_tips_computed(self):
-        return self.tips.count()
+        return self.tips_calculated
 
     # we need a scheduled task to update the most recent logistics state periodically so we don't have to rely on the
     # ojbect to be updated on save.
@@ -229,6 +237,7 @@ class ToteMove(models.Model):
     )
     created_on = models.DateTimeField(auto_now_add=True)
     tote = models.ForeignKey(Tote, on_delete=models.DO_NOTHING)
+    sensor = models.ForeignKey(SmartEdgeSensor, on_delete=models.DO_NOTHING)
     note = models.CharField(max_length=150)
     ledger_entry = models.ForeignKey(LedgerEntry, on_delete=models.DO_NOTHING, blank=True, null=True)
 
