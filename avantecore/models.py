@@ -90,7 +90,7 @@ class Scale(models.Model):
     serial_num = models.CharField(max_length=150)
     eth0 = models.CharField(max_length=17)
     note = models.CharField(max_length=255)
-    image = models.ImageField(upload_to='djangouploads/files/scale_images')
+    image = models.ImageField(upload_to='djangouploads/files/scale_images', blank=True, null=True)
 
     def __str__(self):
         return 'Scale ID: {} Location: {}'.format(self.scale_id, self.customer_location.name)
@@ -135,7 +135,7 @@ class SmartEdgeSensor(models.Model):
     image = models.ImageField(upload_to='djangouploads/filessensor_images', blank=True)
 
     def __str__(self):
-        return 'Smart Edge Sensor: {} Location: {}'.format(self.sensor_id, self.customer_location.name)
+        return 'SES ID: {} Location: {}'.format(self.sensor_id, self.customer_location.name)
 
 # When a HaulEntry is created the previous LogisticsState object should be closed and a new LogisticsState object should be created with
 # the staged totes value should be set to the value the Hauler specifies in the hauler entry. When tote move occurs, it should become associated
